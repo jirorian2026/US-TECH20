@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>US TECH20 Dashboard</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: linear-gradient(to bottom, #10233f, #08111f);
+  font-family: Arial, sans-serif;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.topbar {
+  background: linear-gradient(to bottom, #214a84, #17345d);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  padding: 6px 14px;
+  flex-shrink: 0;
+}
+.top-title {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+.top-sub {
+  margin-top: 1px;
+  font-size: 11px;
+  color: #b8d3ff;
+}
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  flex: 1;
+  overflow: hidden;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+.row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: center;
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.05);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.left {
+  padding: 4px 8px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.name {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.meta {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #ffd84a;
+}
+.widget {
+  height: 100%;
+  overflow: hidden;
+}
+.row:hover {
+  background: rgba(255,255,255,0.04);
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="top-title">世界の株価風 US TECH20</div>
+  <div class="top-sub">FactSet US Tech Top 20 / USDJPY</div>
+</div>
+
+<div class="columns" id="columns"></div>
+
+<script>
+const stocks = [
+  { symbol: "AMEX:FNGS",      name: "US TECH20",            meta: "INDEX"  },
+  { symbol: "FX_IDC:USDJPY",  name: "ドル円",               meta: "USDJPY" },
+  { symbol: "NASDAQ:PLTR",    name: "パランティア",          meta: "8.4%"   },
+  { symbol: "NASDAQ:TSLA",    name: "テスラ",                meta: "8.2%"   },
+  { symbol: "NASDAQ:NVDA",    name: "エヌビディア",          meta: "8.1%"   },
+  { symbol: "NASDAQ:AVGO",    name: "ブロードコム",          meta: "8.0%"   },
+  { symbol: "NASDAQ:GOOGL",   name: "アルファベット",        meta: "7.8%"   },
+  { symbol: "NASDAQ:AAPL",    name: "アップル",              meta: "7.8%"   },
+  { symbol: "NASDAQ:AMZN",    name: "アマゾン",              meta: "7.8%"   },
+  { symbol: "NASDAQ:MSFT",    name: "マイクロソフト",        meta: "7.6%"   },
+  { symbol: "NASDAQ:META",    name: "メタ",                  meta: "6.7%"   },
+  { symbol: "NASDAQ:ISRG",    name: "インテュイティブ",      meta: "4.4%"   },
+  { symbol: "NASDAQ:PDD",     name: "PDD",                   meta: "4.0%"   },
+  { symbol: "NASDAQ:INTU",    name: "インテュイット",        meta: "3.7%"   },
+  { symbol: "NASDAQ:KLAC",    name: "KLA",                   meta: "3.7%"   },
+  { symbol: "NASDAQ:AMD",     name: "AMD",                   meta: "2.7%"   },
+  { symbol: "NASDAQ:MELI",    name: "メルカドリブレ",        meta: "2.3%"   },
+  { symbol: "NASDAQ:MU",      name: "マイクロン",            meta: "2.2%"   },
+  { symbol: "NASDAQ:NFLX",    name: "ネットフリックス",      meta: "1.9%"   },
+  { symbol: "NASDAQ:AMAT",    name: "アプライド",            meta: "1.6%"   },
+  { symbol: "NASDAQ:LRCX",    name: "ラムリサーチ",          meta: "1.6%"   },
+  { symbol: "NASDAQ:QCOM",    name: "クアルコム",            meta: "1.4%"   }
+];
+
+// 3列に分割 (8, 7, 7)
+const colSizes = [8, 7, 7];
+const columns = document.getElementById('columns');
+
+let idx = 0;
+colSizes.forEach(size => {
+  const col = document.createElement('div');
+  col.className = 'col';
+
+  for (let i = 0; i < size; i++) {
+    const stock = stocks[idx];
+    const globalIdx = idx;
+    idx++;
+
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <div class="left">
+        <div class="name">${stock.name}</div>
+        <div class="meta">${stock.meta}</div>
+      </div>
+      <div class="widget" id="w${globalIdx}"></div>
+    `;
+    col.appendChild(row);
+
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      symbol: stock.symbol,
+      width: '100%',
+      colorTheme: 'dark',
+      isTransparent: true,
+      locale: 'ja'
+    });
+
+    // rowがDOMに追加された後にscriptを挿入
+    setTimeout(() => {
+      document.getElementById(`w${globalIdx}`).appendChild(script);
+    }, 0);
+  }
+
+  columns.appendChild(col);
+});
+</script>
+
+</body>
+</html>
