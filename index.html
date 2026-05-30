@@ -1,169 +1,706 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>US TECH20 Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="買い物リスト">
+<title>買い物リスト</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: linear-gradient(to bottom, #10233f, #08111f);
-  font-family: Arial, sans-serif;
-  color: white;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --green:#639922;--green-dark:#3B6D11;--green-bg:#EAF3DE;--green-text:#3B6D11;
+  --bg:#F2F2F7;--card:#FFFFFF;--border:rgba(0,0,0,0.1);
+  --text:#1C1C1E;--text-sub:#6C6C70;--text-hint:#AEAEB2;--surface:#F2F2F7;
 }
-.topbar {
-  background: linear-gradient(to bottom, #214a84, #17345d);
-  border-bottom: 1px solid rgba(255,255,255,0.15);
-  padding: 6px 14px;
-  flex-shrink: 0;
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1C1C1E;--card:#2C2C2E;--border:rgba(255,255,255,0.1);--text:#F2F2F7;--text-sub:#AEAEB2;--text-hint:#636366;--green-bg:#1A2E0A;--green-text:#A3C76A;--surface:#3A3A3C;}
 }
-.top-title {
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: 1px;
-}
-.top-sub {
-  margin-top: 1px;
-  font-size: 11px;
-  color: #b8d3ff;
-}
-.columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  flex: 1;
-  overflow: hidden;
-}
-.col {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow: hidden;
-}
-.row {
-  display: grid;
-  grid-template-columns: 130px 1fr;
-  align-items: center;
-  background: rgba(0,0,0,0.18);
-  border: 1px solid rgba(255,255,255,0.05);
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-.left {
-  padding: 4px 8px;
-  border-right: 1px solid rgba(255,255,255,0.06);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.name {
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-.meta {
-  margin-top: 2px;
-  font-size: 12px;
-  font-weight: 900;
-  color: #ffd84a;
-}
-.widget {
-  height: 100%;
-  overflow: hidden;
-}
-.row:hover {
-  background: rgba(255,255,255,0.04);
-}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:16px;}
+.app{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+
+/* ヘッダー */
+.header{background:var(--card);border-bottom:0.5px solid var(--border);padding:env(safe-area-inset-top,44px) 16px 12px;position:sticky;top:0;z-index:100;}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.header h1{font-size:22px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.header h1 i{color:var(--green);}
+.header-btns{display:flex;align-items:center;gap:4px;}
+.icon-btn{background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:8px;color:var(--text-sub);font-family:inherit;font-size:13px;display:flex;align-items:center;gap:4px;}
+.icon-btn:active{background:var(--surface);}
+.icon-btn i{font-size:17px;}
+.clear-btn{font-size:13px;color:#FF3B30;}
+.prog-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sub);margin-bottom:6px;}
+.prog-wrap{background:var(--bg);border-radius:99px;height:5px;overflow:hidden;margin-bottom:10px;}
+.prog-fill{height:100%;background:var(--green);border-radius:99px;transition:width .35s ease;}
+
+/* PFC トグル */
+.pfc-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:2px 0;}
+.pfc-toggle-label{font-size:12px;color:var(--text-sub);display:flex;align-items:center;gap:5px;}
+.pfc-toggle-label i{font-size:13px;}
+.toggle-wrap{position:relative;width:42px;height:24px;flex-shrink:0;}
+.toggle-wrap input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;background:var(--border);border-radius:99px;transition:background .2s;cursor:pointer;}
+.toggle-wrap input:checked + .toggle-track{background:var(--green);}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle-wrap input:checked ~ .toggle-thumb{transform:translateX(18px);}
+/* 合計PFC */
+.pfc-total-row{display:none;margin-top:8px;background:var(--surface);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--text-sub);}
+.pfc-total-row.visible{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+.pfc-total-row .label{font-weight:600;margin-right:4px;color:var(--text-sub);}
+.pfc-total-tag{display:inline-flex;align-items:center;gap:2px;background:var(--card);border-radius:6px;padding:2px 7px;font-size:12px;border:0.5px solid var(--border);}
+.pfc-total-tag b{font-weight:600;}
+
+/* リスト */
+.scroll{flex:1;overflow-y:auto;padding:16px 16px 220px;-webkit-overflow-scrolling:touch;}
+.section{margin-bottom:20px;}
+.sec-label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:0 4px 7px;display:flex;align-items:center;gap:5px;}
+.sec-label i{font-size:14px;}
+.card{background:var(--card);border-radius:12px;overflow:hidden;}
+.item{display:flex;align-items:stretch;border-bottom:0.5px solid var(--border);min-height:54px;cursor:pointer;-webkit-user-select:none;user-select:none;transition:background .1s;}
+.item:last-child{border-bottom:none;}
+.item:active{background:var(--surface);}
+.item.checked{background:var(--green-bg);}
+.color-bar{width:4px;min-width:4px;flex-shrink:0;}
+.item-inner{display:flex;align-items:center;gap:10px;flex:1;padding:11px 12px 11px 10px;}
+.circle{width:27px;height:27px;min-width:27px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.circle i{font-size:15px;color:white;opacity:0;transition:opacity .15s;}
+.item.checked .circle i{opacity:1;}
+.item-text{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.item-name{font-size:16px;line-height:1.3;}
+.item.checked .item-name{color:var(--green-text);}
+.pfc-row{display:none;font-size:11px;color:var(--text-hint);line-height:1.5;}
+.pfc-row.visible{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+.item.checked .pfc-row{color:var(--green-text);opacity:.7;}
+.pfc-tag{font-size:11px;}
+.pfc-tag span{font-weight:500;}
+.pfc-nodata{display:flex;align-items:center;gap:5px;}
+.pfc-scan-btn2{height:22px;padding:0 9px;background:var(--green);border:none;border-radius:99px;color:white;font-size:11px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:3px;font-family:inherit;}
+.pfc-scan-btn2 i{font-size:12px;}
+.pfc-manual-btn2{height:22px;padding:0 9px;background:var(--surface);border:0.5px solid var(--border);border-radius:99px;color:var(--text-sub);font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;font-family:inherit;}
+.pfc-manual-btn2 i{font-size:12px;}
+.pfc-edit-form{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:2px;}
+.pfc-edit-form input{width:52px;height:26px;border:0.5px solid var(--border);border-radius:6px;padding:0 6px;font-size:12px;background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;}
+.pfc-edit-form input:focus{border-color:var(--green);}
+.pfc-edit-form label{font-size:11px;color:var(--text-sub);}
+.pfc-save-btn{height:26px;padding:0 10px;background:var(--green);border:none;border-radius:6px;color:white;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.pfc-cancel-btn{height:26px;padding:0 8px;background:var(--surface);border:none;border-radius:6px;color:var(--text-sub);font-size:12px;cursor:pointer;font-family:inherit;}
+.del{background:none;border:none;padding:5px;border-radius:6px;cursor:pointer;color:var(--text-hint);display:flex;align-items:center;flex-shrink:0;}
+.del:active{color:#FF3B30;}
+.del i{font-size:17px;}
+.empty{text-align:center;color:var(--text-hint);font-size:14px;padding-top:60px;}
+.empty i{font-size:48px;display:block;margin-bottom:14px;}
+
+/* 追加パネル */
+.add-panel{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:0.5px solid var(--border);padding:10px 16px env(safe-area-inset-bottom,16px);z-index:200;}
+.add-methods{display:flex;flex-direction:column;gap:8px;}
+.textarea-wrap{position:relative;margin-bottom:0;}
+.add-panel textarea{width:100%;min-height:58px;resize:none;border:0.5px solid var(--border);border-radius:8px;padding:9px 44px 9px 12px;font-size:15px;background:var(--bg);color:var(--text);outline:none;font-family:inherit;line-height:1.6;transition:min-height .25s ease,box-shadow .15s;}
+.add-panel textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(99,153,34,.15);min-height:120px;}
+.mic-btn{position:absolute;right:8px;top:10px;width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--surface);color:var(--text-sub);}
+.mic-btn.listening{background:#FF3B30;color:white;animation:pulse 1s infinite;}
+.mic-btn.listening-pulse{background:#FF3B30;color:white;}
+.mic-btn i{font-size:17px;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+.add-bottom-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;}
+.mic-hint{font-size:11px;color:var(--text-hint);flex:1;}
+.add-btn{height:40px;padding:0 18px;background:var(--green);border:none;border-radius:8px;color:white;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;white-space:nowrap;transition:background .15s;}
+.add-btn:active{background:var(--green-dark);}
+.scan-btns-row{display:flex;gap:8px;}
+.scan-add-btn{flex:1;border:1.5px dashed var(--border);background:none;border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--text);font-family:inherit;text-align:left;transition:all .15s;}
+.scan-add-btn:active{background:var(--surface);}
+
+/* モーダル */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-sheet{background:var(--card);border-radius:16px 16px 0 0;width:100%;max-width:430px;padding:20px 20px env(safe-area-inset-bottom,20px);transform:translateY(30px);transition:transform .25s;}
+.modal-overlay.open .modal-sheet{transform:translateY(0);}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.modal-title i{color:var(--green);font-size:20px;}
+.modal-label{font-size:13px;color:var(--text-sub);margin-bottom:6px;}
+.modal-input{width:100%;height:44px;border:0.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:15px;background:var(--bg);color:var(--text);outline:none;font-family:inherit;margin-bottom:10px;}
+.modal-input:focus{border-color:var(--green);}
+.modal-note{font-size:11px;color:var(--text-hint);margin-bottom:16px;line-height:1.6;}
+.modal-btns{display:flex;gap:8px;}
+.modal-save{flex:1;height:44px;background:var(--green);border:none;border-radius:8px;color:white;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+.modal-cancel{height:44px;padding:0 16px;background:var(--surface);border:none;border-radius:8px;color:var(--text-sub);font-size:15px;cursor:pointer;font-family:inherit;}
+
+.toast{position:fixed;bottom:230px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(0,0,0,.72);color:white;padding:10px 18px;border-radius:99px;font-size:14px;opacity:0;transition:all .25s;pointer-events:none;z-index:400;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* 前回リストバナー */
+.prev-banner{background:var(--card);border:0.5px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;}
+.prev-banner-hd{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;}
+.prev-banner-hd:active{background:var(--surface);}
+.prev-banner-title{font-size:14px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:7px;}
+.prev-banner-title i{font-size:16px;color:#FFA726;}
+.prev-banner-date{font-size:11px;color:var(--text-hint);}
+.prev-banner-body{border-top:0.5px solid var(--border);padding:10px 14px 12px;}
+.prev-item-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.prev-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:0.5px solid var(--border);border-radius:99px;padding:4px 10px;font-size:13px;cursor:pointer;-webkit-user-select:none;user-select:none;transition:background .1s;}
+.prev-chip.sel{background:#EAF3DE;border-color:#639922;color:#3B6D11;}
+.prev-chip i{font-size:12px;}
+.prev-actions{display:flex;gap:8px;}
+.prev-add-btn{flex:1;height:38px;background:var(--green);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.prev-sel-btn{height:38px;padding:0 12px;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;color:var(--text-sub);font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+
+/* 前回リストモーダル（全体） */
+.prev-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;display:none;align-items:flex-end;justify-content:center;}
+.prev-modal.open{display:flex;}
+.prev-sheet{background:var(--card);border-radius:16px 16px 0 0;width:100%;max-width:430px;max-height:80vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,16px);}
+.prev-sheet-hd{padding:16px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);}
+.prev-sheet-title{font-size:17px;font-weight:600;}
+.prev-sheet-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-hint);padding:4px;}
+.prev-sheet-body{overflow-y:auto;flex:1;padding:10px 14px;}
+.prev-cat-label{font-size:11px;font-weight:600;color:var(--text-hint);text-transform:uppercase;letter-spacing:.06em;padding:8px 2px 5px;}
+.prev-row{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:0.5px solid var(--border);cursor:pointer;}
+.prev-row:last-child{border-bottom:none;}
+.prev-row:active{opacity:.7;}
+.prev-check{width:22px;height:22px;min-width:22px;border-radius:6px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.prev-check.on{background:var(--green);border-color:var(--green);}
+.prev-check i{font-size:13px;color:#fff;opacity:0;}
+.prev-check.on i{opacity:1;}
+.prev-row-name{flex:1;font-size:15px;}
+.prev-row-cat{font-size:11px;color:var(--text-hint);}
+.prev-sheet-foot{padding:12px 16px 0;border-top:0.5px solid var(--border);}
+.prev-restore-btn{width:100%;height:46px;background:var(--green);border:none;border-radius:8px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;}
+.scanner-modal{position:fixed;inset:0;background:#000;z-index:2000;display:none;flex-direction:column;}
+.scanner-modal.open{display:flex;}
+#scannerVideo{width:100%;flex:1;object-fit:cover;}
+.scan-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+.scan-frame{width:240px;height:160px;position:relative;}
+.scan-frame::before{content:'';position:absolute;top:0;left:0;width:40px;height:40px;border-top:3px solid #fff;border-left:3px solid #fff;}
+.scan-frame::after{content:'';position:absolute;bottom:0;right:0;width:40px;height:40px;border-bottom:3px solid #fff;border-right:3px solid #fff;}
+.scan-tr{position:absolute;top:0;right:0;width:40px;height:40px;border-top:3px solid #fff;border-right:3px solid #fff;}
+.scan-bl{position:absolute;bottom:0;left:0;width:40px;height:40px;border-bottom:3px solid #fff;border-left:3px solid #fff;}
+.scan-line{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#4CAF50,transparent);animation:scanline 1.8s linear infinite;}
+@keyframes scanline{0%{top:0%;}100%{top:100%;}}
+.scan-hint{color:rgba(255,255,255,.85);font-size:13px;margin-top:20px;text-align:center;}
+.scan-status{position:absolute;bottom:env(safe-area-inset-bottom,24px);left:0;right:0;padding:10px;background:rgba(0,0,0,.6);color:#fff;font-size:13px;text-align:center;}
+.scan-cancel{position:absolute;top:env(safe-area-inset-top,52px);left:16px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:99px;padding:8px 18px;font-size:14px;cursor:pointer;font-family:inherit;}
+
+/* PFC確認シート */
+.cf-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2100;display:none;align-items:flex-end;justify-content:center;}
+.cf-modal.open{display:flex;}
+.cf-sheet{background:var(--card);border-radius:16px 16px 0 0;padding:20px 16px env(safe-area-inset-bottom,20px);width:100%;max-width:430px;}
+.cf-prod{font-size:17px;font-weight:600;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cf-sub{font-size:13px;color:var(--text-sub);margin-bottom:14px;}
+.cf-pfc{display:flex;gap:8px;margin-bottom:16px;}
+.cf-col{flex:1;text-align:center;border:0.5px solid var(--border);border-radius:10px;padding:10px 4px 8px;}
+.cf-col label{display:block;font-size:11px;color:var(--text-hint);margin-bottom:5px;}
+.cf-col input{width:100%;border:none;background:none;text-align:center;font-size:20px;font-weight:700;color:var(--text);outline:none;font-family:inherit;}
+.cf-ok{width:100%;height:46px;background:var(--green);border:none;border-radius:8px;color:#fff;font-size:16px;font-weight:600;margin-bottom:8px;cursor:pointer;font-family:inherit;}
+.cf-ng{width:100%;height:36px;background:none;border:none;color:var(--text-hint);font-size:14px;cursor:pointer;font-family:inherit;}
+
+/* カメラ選択アクションシート */
+.as-wrap{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1800;display:none;align-items:flex-end;justify-content:center;}
+.as-wrap.open{display:flex;}
+.as-body{background:var(--card);border-radius:16px 16px 0 0;padding:0 0 env(safe-area-inset-bottom,8px);width:100%;max-width:430px;overflow:hidden;}
+.as-hd{font-size:12px;color:var(--text-hint);text-align:center;padding:14px 16px 10px;border-bottom:0.5px solid var(--border);}
+.as-btn{width:100%;border:none;background:none;padding:15px 16px;font-size:15px;color:var(--text);cursor:pointer;border-bottom:0.5px solid var(--border);font-family:inherit;display:flex;align-items:center;gap:12px;text-align:left;}
+.as-btn:active{background:var(--surface);}
+.as-btn i{font-size:22px;color:var(--green);width:26px;flex-shrink:0;}
+.as-btn small{display:block;font-size:11px;color:var(--text-hint);margin-top:2px;}
+.as-btn.red{color:#FF3B30;}.as-btn.red i{color:#FF3B30;}
 </style>
 </head>
 <body>
-
-<div class="topbar">
-  <div class="top-title">世界の株価風 US TECH20</div>
-  <div class="top-sub">FactSet US Tech Top 20 / USDJPY</div>
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <h1><i class="ti ti-shopping-cart"></i>買い物リスト</h1>
+      <div class="header-btns">
+        <button class="icon-btn" onclick="openPrevModal()" title="前回のリスト" id="prevBtn" style="display:none">
+          <i class="ti ti-history"></i>
+        </button>
+        <button class="icon-btn clear-btn" onclick="clearChecked()">
+          <i class="ti ti-trash"></i>完了削除
+        </button>
+      </div>
+    </div>
+    <div class="prog-row"><span id="pt">0 / 0 完了</span><span id="pp">0%</span></div>
+    <div class="prog-wrap"><div class="prog-fill" id="pb" style="width:0%"></div></div>
+    <div class="pfc-toggle-row">
+      <div class="pfc-toggle-label"><i class="ti ti-chart-bar"></i>PFC栄養素を表示（100gあたり）</div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="pfcToggle" onchange="onPfcToggle()">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+    <div class="pfc-total-row" id="pfcTotalRow">
+      <span class="label">合計</span>
+      <span class="pfc-total-tag">P <b id="tP">0</b>g</span>
+      <span class="pfc-total-tag">F <b id="tF">0</b>g</span>
+      <span class="pfc-total-tag">C <b id="tC">0</b>g</span>
+    </div>
+  </div>
+  <div class="scroll" id="lc"></div>
 </div>
 
-<div class="columns" id="columns"></div>
+<!-- 追加パネル -->
+<div class="add-panel">
+  <div class="add-methods">
+    <!-- テキスト入力 -->
+    <div class="method-row" id="textMethod">
+      <div class="textarea-wrap">
+        <textarea id="inp" placeholder="食品名を入力（複数はカンマや改行でOK）&#10;例：にんじん、鶏むね肉、冷凍餃子"></textarea>
+        <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="音声でそのまま追加">
+          <i class="ti ti-microphone" id="micIcon"></i>
+        </button>
+      </div>
+      <div class="add-bottom-row">
+        <span class="mic-hint" id="micHint">🎤 マイクボタンで音声入力→即追加</span>
+        <button class="add-btn" onclick="addItems()"><i class="ti ti-plus"></i> 追加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 前回のリスト復元モーダル -->
+<div class="prev-modal" id="prevModal" onclick="if(event.target===this)closePrevModal()">
+  <div class="prev-sheet">
+    <div class="prev-sheet-hd">
+      <div class="prev-sheet-title">🛒 前回の買い物リスト</div>
+      <button class="prev-sheet-close" onclick="closePrevModal()">×</button>
+    </div>
+    <div class="prev-sheet-body" id="prevSheetBody"></div>
+    <div class="prev-sheet-foot">
+      <button class="prev-restore-btn" onclick="restoreSelected()">選択した食品を追加する</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-const stocks = [
-  { symbol: "AMEX:FNGS",      name: "US TECH20",            meta: "INDEX"  },
-  { symbol: "FX_IDC:USDJPY",  name: "ドル円",               meta: "USDJPY" },
-  { symbol: "NASDAQ:PLTR",    name: "パランティア",          meta: "8.4%"   },
-  { symbol: "NASDAQ:TSLA",    name: "テスラ",                meta: "8.2%"   },
-  { symbol: "NASDAQ:NVDA",    name: "エヌビディア",          meta: "8.1%"   },
-  { symbol: "NASDAQ:AVGO",    name: "ブロードコム",          meta: "8.0%"   },
-  { symbol: "NASDAQ:GOOGL",   name: "アルファベット",        meta: "7.8%"   },
-  { symbol: "NASDAQ:AAPL",    name: "アップル",              meta: "7.8%"   },
-  { symbol: "NASDAQ:AMZN",    name: "アマゾン",              meta: "7.8%"   },
-  { symbol: "NASDAQ:MSFT",    name: "マイクロソフト",        meta: "7.6%"   },
-  { symbol: "NASDAQ:META",    name: "メタ",                  meta: "6.7%"   },
-  { symbol: "NASDAQ:ISRG",    name: "インテュイティブ",      meta: "4.4%"   },
-  { symbol: "NASDAQ:PDD",     name: "PDD",                   meta: "4.0%"   },
-  { symbol: "NASDAQ:INTU",    name: "インテュイット",        meta: "3.7%"   },
-  { symbol: "NASDAQ:KLAC",    name: "KLA",                   meta: "3.7%"   },
-  { symbol: "NASDAQ:AMD",     name: "AMD",                   meta: "2.7%"   },
-  { symbol: "NASDAQ:MELI",    name: "メルカドリブレ",        meta: "2.3%"   },
-  { symbol: "NASDAQ:MU",      name: "マイクロン",            meta: "2.2%"   },
-  { symbol: "NASDAQ:NFLX",    name: "ネットフリックス",      meta: "1.9%"   },
-  { symbol: "NASDAQ:AMAT",    name: "アプライド",            meta: "1.6%"   },
-  { symbol: "NASDAQ:LRCX",    name: "ラムリサーチ",          meta: "1.6%"   },
-  { symbol: "NASDAQ:QCOM",    name: "クアルコム",            meta: "1.4%"   }
-];
+// ─── カテゴリ定義 ────────────────────────────────────────
+const CAT_ORDER=["野菜・果物","肉類","魚介類","乳製品・卵","加工食品・豆腐","冷凍食品","惣菜・弁当","パン・麺・米","調味料・油","飲料","お菓子・スナック","日用品・その他"];
+const CAT_COLORS={"野菜・果物":"#4CAF50","肉類":"#EF5350","魚介類":"#2196F3","乳製品・卵":"#FFC107","加工食品・豆腐":"#FF7043","冷凍食品":"#26C6DA","惣菜・弁当":"#AB47BC","パン・麺・米":"#8D6E63","調味料・油":"#EC407A","飲料":"#26A69A","お菓子・スナック":"#FFA726","日用品・その他":"#78909C"};
+const CAT_ICONS={"野菜・果物":"ti-leaf","肉類":"ti-meat","魚介類":"ti-fish","乳製品・卵":"ti-egg","加工食品・豆腐":"ti-package","冷凍食品":"ti-snowflake","惣菜・弁当":"ti-bowl","パン・麺・米":"ti-bread","調味料・油":"ti-bottle","飲料":"ti-glass-full","お菓子・スナック":"ti-candy","日用品・その他":"ti-shopping-bag"};
 
-// 3列に分割 (8, 7, 7)
-const colSizes = [8, 7, 7];
-const columns = document.getElementById('columns');
+// ─── PFC辞書（100gあたり P/F/C g） ──────────────────────
+const PFC={
+  "にんじん":[0.7,0.2,8.8],"たまねぎ":[1.0,0.1,8.8],"玉ねぎ":[1.0,0.1,8.8],"ほうれん草":[2.2,0.4,3.1],
+  "キャベツ":[1.3,0.2,5.2],"レタス":[0.6,0.1,2.8],"トマト":[0.7,0.1,4.7],"ミニトマト":[0.7,0.1,5.8],
+  "きゅうり":[1.0,0.1,3.0],"なす":[1.1,0.1,5.1],"じゃがいも":[1.8,0.1,17.3],
+  "さつまいも":[1.2,0.2,31.5],"大根":[0.5,0.1,4.1],"ブロッコリー":[4.3,0.5,6.6],
+  "アスパラガス":[2.6,0.2,3.9],"アスパラ":[2.6,0.2,3.9],"ピーマン":[0.9,0.2,5.1],
+  "パプリカ":[1.0,0.2,7.2],"ねぎ":[1.4,0.1,7.4],"長ねぎ":[1.4,0.1,7.4],
+  "もやし":[1.7,0.1,2.6],"ゴーヤ":[1.0,0.1,3.9],"ズッキーニ":[1.3,0.1,2.8],
+  "かぼちゃ":[1.6,0.3,20.6],"南瓜":[1.6,0.3,20.6],"とうもろこし":[3.5,1.7,16.8],
+  "れんこん":[1.9,0.1,15.5],"蓮根":[1.9,0.1,15.5],"ごぼう":[1.8,0.1,15.4],
+  "里芋":[1.5,0.1,13.1],"小松菜":[1.5,0.2,2.4],"水菜":[2.2,0.4,4.8],
+  "チンゲン菜":[0.6,0.1,2.0],"三つ葉":[0.7,0.1,2.4],"豆苗":[3.8,0.4,3.9],
+  "枝豆":[11.7,6.2,8.9],"えだまめ":[11.7,6.2,8.9],"そら豆":[10.5,0.2,15.5],
+  "オクラ":[2.1,0.2,6.6],"しいたけ":[3.0,0.4,6.4],"椎茸":[3.0,0.4,6.4],
+  "エリンギ":[2.8,0.4,6.0],"しめじ":[2.7,0.5,4.9],"えのき":[2.7,0.2,7.6],
+  "まいたけ":[2.0,0.5,4.4],"なめこ":[1.7,0.3,5.4],"マッシュルーム":[2.9,0.3,2.1],
+  "りんご":[0.2,0.1,16.2],"バナナ":[1.1,0.2,22.5],"みかん":[0.7,0.1,12.0],
+  "オレンジ":[0.9,0.1,11.8],"グレープフルーツ":[0.9,0.1,9.6],"レモン":[0.9,0.7,12.5],
+  "いちご":[0.9,0.1,8.5],"苺":[0.9,0.1,8.5],"ぶどう":[0.4,0.1,15.7],"葡萄":[0.4,0.1,15.7],
+  "スイカ":[0.6,0.1,9.2],"メロン":[1.1,0.1,10.3],"桃":[0.6,0.1,10.2],"もも":[0.6,0.1,10.2],
+  "梨":[0.3,0.1,14.4],"なし":[0.3,0.1,14.4],"柿":[0.4,0.2,15.9],"かき":[0.4,0.2,15.9],
+  "キウイ":[1.0,0.2,13.5],"パイナップル":[0.6,0.1,13.7],"マンゴー":[0.6,0.1,16.9],
+  "ブルーベリー":[0.5,0.1,12.9],"さくらんぼ":[1.0,0.2,15.2],"アボカド":[2.5,17.5,6.2],
+  "鶏むね肉":[23.3,1.9,0.0],"鶏もも肉":[17.3,14.2,0.0],"鶏ささみ":[24.6,0.8,0.0],
+  "ささみ":[24.6,0.8,0.0],"手羽先":[17.4,16.2,0.0],"手羽元":[18.2,12.8,0.0],
+  "豚バラ":[14.4,35.4,0.1],"豚ロース":[22.7,19.2,0.2],"豚こま":[18.5,15.1,0.1],
+  "豚ひれ":[22.2,3.7,0.2],"豚肩ロース":[17.7,26.4,0.1],"豚レバー":[20.4,3.4,2.5],
+  "牛バラ":[11.0,50.0,0.1],"牛ロース":[17.1,37.4,0.2],"牛タン":[13.3,31.8,0.2],
+  "牛レバー":[19.6,3.7,3.7],"ひき肉":[17.5,20.7,0.0],"合びき肉":[17.5,20.7,0.0],
+  "鶏ひき肉":[17.5,12.0,0.0],"豚ひき肉":[17.7,17.2,0.1],"牛ひき肉":[17.1,21.1,0.3],
+  "ラム":[17.1,25.9,0.2],"羊肉":[17.1,25.9,0.2],"鴨肉":[14.2,28.4,0.1],
+  "合鴨":[14.2,28.4,0.1],"馬肉":[20.1,2.5,0.3],
+  "ソーセージ":[11.5,28.5,3.0],"ウインナー":[11.5,28.5,3.0],"フランクフルト":[12.7,30.6,6.2],
+  "ハム":[16.5,14.5,1.8],"ベーコン":[12.9,39.1,0.3],"サラミ":[17.6,43.0,1.5],
+  "サーモン":[20.1,9.1,0.1],"鮭":[22.3,4.1,0.1],"しゃけ":[22.3,4.1,0.1],
+  "マグロ":[28.3,1.4,0.1],"まぐろ":[28.3,1.4,0.1],"アジ":[19.7,4.5,0.1],
+  "あじ":[19.7,4.5,0.1],"サバ":[20.6,16.8,0.3],"さば":[20.6,16.8,0.3],
+  "イワシ":[19.2,9.2,0.2],"いわし":[19.2,9.2,0.2],"サンマ":[18.1,25.6,0.1],
+  "さんま":[18.1,25.6,0.1],"ブリ":[21.4,17.6,0.3],"ぶり":[21.4,17.6,0.3],
+  "カツオ":[25.8,0.5,0.1],"かつお":[25.8,0.5,0.1],"タイ":[20.6,5.8,0.1],
+  "鯛":[20.6,5.8,0.1],"タラ":[17.6,0.2,0.1],"たら":[17.6,0.2,0.1],
+  "エビ":[18.4,0.3,0.1],"えび":[18.4,0.3,0.1],"カニ":[13.5,0.4,0.1],"かに":[13.5,0.4,0.1],
+  "タコ":[14.6,0.7,0.1],"たこ":[14.6,0.7,0.1],"イカ":[17.9,1.0,0.1],"いか":[17.9,1.0,0.1],
+  "ホタテ":[13.5,0.9,3.5],"帆立":[13.5,0.9,3.5],"アサリ":[6.0,0.3,0.4],"あさり":[6.0,0.3,0.4],
+  "カキ":[6.9,2.2,4.9],"牡蠣":[6.9,2.2,4.9],"シジミ":[7.5,1.4,4.5],"しじみ":[7.5,1.4,4.5],
+  "ウニ":[16.0,4.8,3.3],"いくら":[32.6,15.6,0.2],"明太子":[21.0,3.3,3.4],"たらこ":[24.0,4.7,0.4],
+  "しらす":[15.0,2.1,0.0],"ちりめん":[15.0,2.1,0.0],"ししゃも":[21.0,8.1,0.2],
+  "卵":[12.3,10.3,0.4],"たまご":[12.3,10.3,0.4],"玉子":[12.3,10.3,0.4],
+  "牛乳":[3.3,3.8,5.0],"豆乳":[3.6,2.0,3.1],"ヨーグルト":[3.6,3.0,4.9],
+  "生クリーム":[2.0,43.0,3.1],"バター":[0.6,81.0,0.2],"マーガリン":[0.4,75.0,0.5],
+  "チーズ":[22.7,26.0,1.3],"スライスチーズ":[18.6,24.7,3.1],
+  "モッツァレラ":[18.4,19.9,4.2],"クリームチーズ":[8.2,33.0,2.3],
+  "カマンベール":[19.1,24.7,0.9],"パルメザン":[44.0,30.8,1.9],
+  "アイスクリーム":[3.5,8.0,23.2],"アイス":[3.5,8.0,23.2],
+  "豆腐":[6.6,4.2,1.6],"木綿豆腐":[7.0,4.9,1.5],"絹ごし豆腐":[5.3,3.0,2.0],
+  "厚揚げ":[10.7,11.3,0.9],"油揚げ":[15.3,34.4,0.4],"薄揚げ":[15.3,34.4,0.4],
+  "がんもどき":[15.3,17.8,1.6],"高野豆腐":[50.5,34.1,4.2],
+  "納豆":[16.5,10.0,12.1],"おから":[6.1,3.6,13.8],
+  "かまぼこ":[12.0,0.9,9.7],"竹輪":[12.2,2.0,13.5],"ちくわ":[12.2,2.0,13.5],
+  "はんぺん":[9.9,1.0,11.4],"さつまあげ":[12.5,3.7,13.9],
+  "魚肉ソーセージ":[11.5,7.2,12.6],"カニカマ":[12.1,0.5,9.2],
+  "ツナ缶":[18.8,0.7,0.1],"鮭缶":[21.2,5.5,0.1],"さば缶":[20.3,13.4,0.2],
+  "冷凍餃子":[7.8,8.2,20.4],"冷凍うどん":[2.6,0.4,21.6],"冷凍枝豆":[11.7,6.2,8.9],
+  "冷凍コーン":[3.5,1.7,16.8],"冷凍ブロッコリー":[4.3,0.5,6.6],
+  "冷凍チャーハン":[5.0,5.0,27.0],"冷凍唐揚げ":[16.0,12.0,14.0],
+  "冷凍シュウマイ":[8.5,7.0,18.0],"冷凍たこ焼き":[6.0,6.5,22.0],
+  "冷凍ピザ":[9.0,9.0,30.0],"冷凍春巻き":[7.0,9.0,23.0],
+  "から揚げ":[18.0,12.0,10.0],"唐揚げ":[18.0,12.0,10.0],"コロッケ":[5.2,9.0,25.0],
+  "メンチカツ":[14.0,16.0,15.0],"トンカツ":[20.0,20.0,10.0],
+  "天ぷら":[11.0,15.0,20.0],"春巻き":[8.0,11.0,20.0],"餃子":[7.8,8.2,20.4],
+  "シュウマイ":[8.5,7.0,18.0],"焼き鳥":[18.0,10.0,5.0],"ハンバーグ":[13.0,17.0,8.0],
+  "肉じゃが":[6.0,5.0,12.0],"ポテトサラダ":[2.0,6.0,12.0],
+  "チャーハン":[5.0,5.0,27.0],"おにぎり":[2.7,0.5,38.0],"サンドイッチ":[8.0,8.0,28.0],
+  "から揚げ弁当":[15.0,10.0,35.0],"のり弁":[8.0,5.0,40.0],
+  "白米":[2.5,0.3,37.1],"玄米":[2.8,1.0,35.6],"もち米":[3.4,0.5,49.5],
+  "食パン":[8.9,4.1,44.4],"バゲット":[9.4,1.4,54.8],"クロワッサン":[7.9,26.8,42.5],
+  "ロールパン":[9.3,8.5,48.0],"ベーグル":[9.0,1.7,53.6],"ナン":[8.6,3.4,45.6],
+  "うどん":[2.6,0.4,21.6],"そば":[4.8,1.0,26.0],"ラーメン":[5.0,2.0,27.0],
+  "そうめん":[3.5,0.4,25.8],"パスタ":[12.9,1.9,73.1],"スパゲッティ":[12.9,1.9,73.1],
+  "春雨":[0.2,0.1,84.8],"ビーフン":[7.0,1.1,79.0],"もち":[4.1,0.6,50.3],
+  "カップ麺":[8.0,6.0,37.0],"インスタントラーメン":[8.0,6.0,38.0],
+  "カップヌードル":[10.5,17.8,38.6],"どん兵衛":[7.7,5.8,45.0],
+  "マヨネーズ":[1.4,76.0,3.6],"ケチャップ":[1.6,0.2,27.6],"味噌":[12.5,6.0,21.9],
+  "醤油":[7.7,0.0,10.1],"しょうゆ":[7.7,0.0,10.1],"みりん":[0.3,0.0,43.2],
+  "オリーブオイル":[0.0,100.0,0.0],"ごま油":[0.0,100.0,0.0],"サラダ油":[0.0,100.0,0.0],
+  "ポン酢":[3.4,0.1,10.3],"ドレッシング":[0.8,25.0,8.0],
+  "牛乳":[3.3,3.8,5.0],"オレンジジュース":[0.7,0.1,11.0],
+  "コーヒー":[0.2,0.0,0.7],"緑茶":[0.2,0.0,0.3],"コーラ":[0.0,0.0,11.3],
+  "ビール":[0.3,0.0,3.1],"ワイン":[0.2,0.0,2.0],"日本酒":[0.5,0.0,5.0],
+  "チョコレート":[7.6,34.3,55.8],"チョコ":[7.6,34.3,55.8],"ポテトチップス":[4.7,35.2,54.7],
+  "クッキー":[7.0,22.0,63.0],"ビスケット":[7.6,20.7,63.0],"せんべい":[7.8,1.4,82.3],
+  "おかき":[7.4,1.6,82.0],"プリン":[4.9,4.5,14.3],"ゼリー":[1.0,0.0,15.0],
+  "ケーキ":[6.0,15.0,42.0],"シュークリーム":[5.5,11.0,21.0],"どら焼き":[6.5,3.1,56.0],
+  "大福":[4.6,0.6,49.0],"グミ":[2.4,0.1,79.0],"キャンディ":[0.1,0.0,87.5],"飴":[0.1,0.0,87.5],
+  "焼きそば":[4.0,3.0,25.0],"お好み焼き":[7.0,7.0,22.0],
+};
 
-let idx = 0;
-colSizes.forEach(size => {
-  const col = document.createElement('div');
-  col.className = 'col';
+// ─── 分類辞書 ────────────────────────────────────────────
+const DICT={"野菜・果物":["キャベツ","白菜","レタス","ほうれん草","小松菜","チンゲン菜","水菜","春菊","ルッコラ","三つ葉","パセリ","バジル","ねぎ","長ねぎ","玉ねぎ","たまねぎ","新玉ねぎ","にんにく","しょうが","生姜","にんじん","大根","かぶ","ごぼう","れんこん","蓮根","さつまいも","じゃがいも","里芋","山芋","長芋","ブロッコリー","カリフラワー","アスパラ","アスパラガス","セロリ","ピーマン","パプリカ","トマト","ミニトマト","なす","茄子","きゅうり","ズッキーニ","かぼちゃ","南瓜","とうもろこし","枝豆","えだまめ","そら豆","インゲン","さやいんげん","スナップえんどう","もやし","豆苗","ニラ","みょうが","しそ","大葉","オクラ","ゴーヤ","冬瓜","とうがん","菜の花","たけのこ","山菜","わらび","ふき","しいたけ","椎茸","エリンギ","しめじ","まいたけ","えのき","なめこ","マッシュルーム","りんご","バナナ","みかん","オレンジ","グレープフルーツ","レモン","ライム","いちご","苺","ぶどう","葡萄","スイカ","メロン","桃","もも","梨","なし","柿","かき","キウイ","パイナップル","マンゴー","ブルーベリー","ラズベリー","アボカド","さくらんぼ","チェリー","プラム","すもも","柚子","ゆず","梅","うめ","いちじく","パパイヤ","すだち","かぼす"],"肉類":["鶏肉","鶏むね肉","鶏もも肉","鶏ささみ","ささみ","手羽先","手羽元","鶏レバー","鶏ひき肉","豚肉","豚バラ","豚ロース","豚こま","豚ひれ","豚肩ロース","豚スペアリブ","豚レバー","豚ひき肉","牛肉","牛バラ","牛ロース","牛ひき肉","牛タン","牛レバー","合びき肉","ひき肉","ミンチ","ラム","羊肉","馬肉","鴨肉","合鴨","猪","鹿肉","焼き鳥","レバー","砂肝","スペアリブ","ロース","バラ肉","もも肉","むね肉","ソーセージ","ウインナー","フランクフルト","ハム","ベーコン","サラミ","コンビーフ","ランチョンミート"],"魚介類":["サーモン","鮭","しゃけ","マグロ","まぐろ","鮪","アジ","あじ","サバ","さば","イワシ","いわし","サンマ","さんま","ブリ","ぶり","カツオ","かつお","タイ","鯛","ヒラメ","平目","タコ","たこ","イカ","いか","エビ","えび","カニ","かに","ホタテ","帆立","アサリ","あさり","ハマグリ","はまぐり","シジミ","しじみ","カキ","牡蠣","ウニ","いくら","タラ","たら","鱈","シラス","しらす","ちりめん","明太子","たらこ","数の子","白子","甘エビ","ホッキ貝","赤貝","ツブ貝","ホタルイカ","ししゃも","刺身","切り身","干物","魚"],"乳製品・卵":["牛乳","ヨーグルト","チーズ","バター","マーガリン","生クリーム","ホイップクリーム","アイスクリーム","アイス","卵","たまご","玉子","うずら","スキムミルク","粉ミルク","クリームチーズ","モッツァレラ","パルメザン","ゴーダ","カマンベール","プロセスチーズ","スライスチーズ","ピザ用チーズ","サワークリーム","カッテージチーズ","乳製品"],"加工食品・豆腐":["豆腐","木綿豆腐","絹豆腐","絹ごし豆腐","厚揚げ","薄揚げ","油揚げ","がんもどき","がんも","高野豆腐","納豆","おから","こんにゃく","ちくわ","かまぼこ","はんぺん","さつまあげ","揚げかまぼこ","なると","伊達巻","魚肉ソーセージ","カニカマ","ツナ缶","鮭缶","さば缶","いわし缶","コーン缶","トマト缶","缶詰","レトルト","大豆","ひよこ豆","レンズ豆","小豆","あずき","黒豆"],"冷凍食品":["冷凍","冷凍餃子","冷凍うどん","冷凍そば","冷凍ラーメン","冷凍ピザ","冷凍枝豆","冷凍コーン","冷凍ブロッコリー","冷凍ほうれん草","冷凍唐揚げ","冷凍エビ","冷凍シーフード","冷凍チャーハン","冷凍パスタ","冷凍グラタン","冷凍春巻き","冷凍シュウマイ","冷凍たこ焼き","冷凍わかめ"],"惣菜・弁当":["弁当","おにぎり","サンドイッチ","唐揚げ","から揚げ","コロッケ","メンチカツ","トンカツ","フライ","天ぷら","春巻き","餃子","シュウマイ","焼き鳥","ローストチキン","ハンバーグ","ミートボール","肉じゃが","煮物","筑前煮","ひじきの煮物","切り干し大根","ポテトサラダ","マカロニサラダ","きんぴら","だし巻き","惣菜","お惣菜","デリ","お弁当","幕の内","のり弁","チキン南蛮","酢豚","麻婆豆腐","グラタン","ドリア","焼きそば","チャーハン","オムライス","テリヤキ","ロールキャベツ"],"パン・麺・米":["食パン","パン","バゲット","クロワッサン","ロールパン","メロンパン","あんパン","クリームパン","コッペパン","ナン","ピタ","ベーグル","フォカッチャ","イングリッシュマフィン","米","お米","白米","玄米","もち米","雑穀米","うどん","そば","ラーメン","そうめん","ひやむぎ","パスタ","スパゲッティ","マカロニ","ペンネ","ビーフン","フォー","春雨","もち","餅","米粉","小麦粉","強力粉","薄力粉","片栗粉","パン粉","ホットケーキミックス","カップ麺","インスタントラーメン","カップヌードル","どん兵衛"],"調味料・油":["塩","砂糖","しょうゆ","醤油","みそ","味噌","みりん","酒","料理酒","酢","マヨネーズ","ケチャップ","ソース","ウスターソース","オイスターソース","ポン酢","ドレッシング","ごま油","サラダ油","オリーブオイル","ラード","なたね油","米油","ラー油","豆板醤","甜麺醤","コチュジャン","味の素","だし","だしの素","コンソメ","鶏ガラ","白だし","めんつゆ","ほんだし","わさび","からし","マスタード","七味","一味","こしょう","胡椒","カレー粉","スパイス","バニラエッセンス","ベーキングパウダー","イースト","ゼラチン","寒天","タバスコ","すし酢","ふりかけ","海苔"],"飲料":["水","ミネラルウォーター","炭酸水","ジュース","コーラ","ファンタ","スプライト","お茶","緑茶","ほうじ茶","麦茶","ウーロン茶","ジャスミン茶","紅茶","コーヒー","カフェオレ","ラテ","エスプレッソ","アーモンドミルク","スムージー","野菜ジュース","トマトジュース","オレンジジュース","りんごジュース","スポーツドリンク","エナジードリンク","ビール","発泡酒","ワイン","日本酒","焼酎","ウイスキー","ハイボール","チューハイ","梅酒","甘酒","ラムネ","カルピス","炭酸","アルコール"],"お菓子・スナック":["チョコレート","チョコ","クッキー","ビスケット","クラッカー","ポテトチップス","コーン菓子","えびせん","柿の種","ミックスナッツ","ナッツ","ガム","グミ","ラムネ菓子","キャンディ","飴","のど飴","ゼリー","プリン","ケーキ","シュークリーム","エクレア","ドーナツ","マフィン","スコーン","羊羹","ようかん","和菓子","どら焼き","大福","みたらし団子","かりんとう","おせんべい","煎餅","あられ","おかき","ソフトクリーム","シャーベット","ポップコーン","プレッツェル","マシュマロ","カステラ","バウムクーヘン","チーズケーキ","ティラミス"],"日用品・その他":["ティッシュ","トイレットペーパー","キッチンペーパー","ラップ","アルミホイル","ジップロック","洗剤","シャンプー","リンス","石鹸","歯ブラシ","歯磨き粉","マスク","薬","サプリ","電池","ライター","割り箸","爪楊枝","スポンジ","たわし","水切りネット"]};
+const KEYWORD_RULES=[{cat:"冷凍食品",keywords:["冷凍","フローズン"]},{cat:"肉類",keywords:["肉","レバー","ハツ","ミンチ","ひき","チキン","ポーク","ビーフ","ラム","豚","牛","鶏","鴨","スペアリブ","バラ","ロース","ひれ","もも","むね","ささみ"]},{cat:"魚介類",keywords:["魚","刺身","切り身","干物","エビ","カニ","イカ","タコ","貝","ウニ","イクラ","明太","たらこ","鮭","サーモン","マグロ","ブリ","タイ","アジ","サバ","イワシ","カツオ","タラ","シラス","ちりめん"]},{cat:"野菜・果物",keywords:["野菜","果物","フルーツ","葉","根","芋","いも","キノコ","きのこ","菌"]},{cat:"乳製品・卵",keywords:["チーズ","ヨーグルト","クリーム","ミルク","バター","卵","たまご","玉子"]},{cat:"加工食品・豆腐",keywords:["豆腐","豆","缶詰","レトルト","かまぼこ","ちくわ","はんぺん","揚げ"]},{cat:"惣菜・弁当",keywords:["弁当","惣菜","おにぎり","揚げ","炒め","煮","焼き","漬け"]},{cat:"パン・麺・米",keywords:["パン","麺","うどん","そば","ラーメン","そうめん","パスタ","米","ご飯","もち","ライス","カップ"]},{cat:"調味料・油",keywords:["醤油","味噌","ソース","ドレッシング","油","塩","砂糖","酢","みりん","だし","スパイス","調味","ふりかけ"]},{cat:"飲料",keywords:["飲料","ドリンク","ジュース","お茶","コーヒー","紅茶","ビール","ワイン","酒","水","炭酸"]},{cat:"お菓子・スナック",keywords:["チョコ","クッキー","スナック","ポテチ","アイス","ケーキ","菓子","グミ","飴","せんべい","ナッツ","プリン","ゼリー"]}];
 
-  for (let i = 0; i < size; i++) {
-    const stock = stocks[idx];
-    const globalIdx = idx;
-    idx++;
+function classify(name){
+  const n=name.replace(/\s/g,'');
+  for(const[cat,words]of Object.entries(DICT)){for(const w of words){if(n===w||n.includes(w)||w.includes(n))return cat;}}
+  for(const rule of KEYWORD_RULES){for(const kw of rule.keywords){if(n.includes(kw))return rule.cat;}}
+  return "日用品・その他";
+}
 
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.innerHTML = `
-      <div class="left">
-        <div class="name">${stock.name}</div>
-        <div class="meta">${stock.meta}</div>
-      </div>
-      <div class="widget" id="w${globalIdx}"></div>
-    `;
-    col.appendChild(row);
+// ─── 学習済みPFC ─────────────────────────────────────────
+let learnedPFC=JSON.parse(localStorage.getItem('learnedPFC')||'{}');
+function saveLearnedPFC(){localStorage.setItem('learnedPFC',JSON.stringify(learnedPFC));}
+function getPFC(name){return PFC[name]||learnedPFC[name]||null;}
 
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      symbol: stock.symbol,
-      width: '100%',
-      colorTheme: 'dark',
-      isTransparent: true,
-      locale: 'ja'
+// ─── データ ──────────────────────────────────────────────
+let items=JSON.parse(localStorage.getItem('shopping_v4')||'[]');
+let nextId=items.length?Math.max(...items.map(i=>i.id))+1:1;
+let pfcVisible=JSON.parse(localStorage.getItem('pfcVisible')||'false');
+let prevList=JSON.parse(localStorage.getItem('prevList')||'null'); // {date, items:[{name,cat}]}
+function save(){localStorage.setItem('shopping_v4',JSON.stringify(items));}
+function savePfc(){localStorage.setItem('pfcVisible',JSON.stringify(pfcVisible));}
+function savePrevList(){localStorage.setItem('prevList',JSON.stringify(prevList));}
+
+// ─── バーコード読み取り（写真撮影方式） ───────────────────
+// ライブカメラではなく「1枚撮影→ZXingで静止画解析」方式
+// iOS標準カメラが開くためiOS14以上全機種対応
+let _asTarget=null;
+
+function openCameraAction(itemId,name){
+  _asTarget={itemId,name};
+  showManualForm();
+}
+function showManualForm(){
+  if(!_asTarget) return;
+  if(!pfcVisible){pfcVisible=true;document.getElementById('pfcToggle').checked=true;savePfc();render();}
+  const nd=document.getElementById(`nd_${_asTarget.itemId}`);
+  if(nd) showPfcForm(_asTarget.itemId,_asTarget.name,nd);
+}
+
+// ─── PFC手入力フォーム ────────────────────────────────────
+function showPfcForm(itemId,name,el){
+  document.querySelectorAll('.pfc-edit-form').forEach(f=>f.remove());
+  document.querySelectorAll('.pfc-nodata').forEach(e=>e.style.display='');
+  el.style.display='none';
+  const form=document.createElement('div');
+  form.className='pfc-edit-form';
+  form.innerHTML=
+    `<label>P</label><input type="number" id="ep_${itemId}" placeholder="0.0" min="0" step="0.1">`+
+    `<label>F</label><input type="number" id="ef_${itemId}" placeholder="0.0" min="0" step="0.1">`+
+    `<label>C</label><input type="number" id="ec_${itemId}" placeholder="0.0" min="0" step="0.1">`+
+    `<button class="pfc-save-btn" onclick="savePfcLearn('${name}',${itemId})">保存</button>`+
+    `<button class="pfc-cancel-btn" onclick="render()">×</button>`;
+  el.parentNode.appendChild(form);
+  form.querySelector(`#ep_${itemId}`).focus();
+}
+function savePfcLearn(name,itemId){
+  const p=parseFloat(document.getElementById('ep_'+itemId).value)||0;
+  const f=parseFloat(document.getElementById('ef_'+itemId).value)||0;
+  const c=parseFloat(document.getElementById('ec_'+itemId).value)||0;
+  learnedPFC[name]=[p,f,c];
+  saveLearnedPFC();render();
+  showToast(`「${name}」のPFCを保存しました`);
+}
+
+// ─── リスト操作 ──────────────────────────────────────────
+function toggle(id){const it=items.find(i=>i.id===id);if(it){it.checked=!it.checked;save();render();}}
+function del(id){items=items.filter(i=>i.id!==id);save();render();}
+function clearChecked(){
+  const checked=items.filter(i=>i.checked);
+  if(!checked.length){showToast("完了済みのアイテムがありません");return;}
+  // 削除前に「前回のリスト」として保存
+  const now=new Date();
+  const dateStr=`${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  prevList={date:dateStr, items:checked.map(i=>({name:i.name,cat:i.cat}))};
+  savePrevList();
+  items=items.filter(i=>!i.checked);
+  save();render();
+  showToast(checked.length+"件削除・前回リストに保存しました");
+}
+
+// ─── 前回リスト ───────────────────────────────────────────
+let _prevSel=new Set(); // 選択中アイテムのインデックス
+
+function openPrevModal(){
+  if(!prevList){showToast("前回のリストはまだありません");return;}
+  // 全選択でスタート
+  _prevSel=new Set(prevList.items.map((_,i)=>i));
+  renderPrevModal();
+  document.getElementById('prevModal').classList.add('open');
+}
+function closePrevModal(){
+  document.getElementById('prevModal').classList.remove('open');
+}
+function togglePrevItem(idx){
+  if(_prevSel.has(idx)) _prevSel.delete(idx); else _prevSel.add(idx);
+  renderPrevModal();
+}
+function renderPrevModal(){
+  const body=document.getElementById('prevSheetBody');
+  const grouped={};
+  prevList.items.forEach((it,i)=>{
+    (grouped[it.cat]=grouped[it.cat]||[]).push({...it,idx:i});
+  });
+  let html='';
+  CAT_ORDER.forEach(cat=>{
+    if(!grouped[cat]) return;
+    html+=`<div class="prev-cat-label">${cat}</div>`;
+    grouped[cat].forEach(it=>{
+      const on=_prevSel.has(it.idx);
+      html+=`<div class="prev-row" onclick="togglePrevItem(${it.idx})">
+        <div class="prev-check${on?' on':''}"><i class="ti ti-check"></i></div>
+        <span class="prev-row-name">${it.name}</span>
+      </div>`;
     });
+  });
+  body.innerHTML=html;
+}
+function restoreSelected(){
+  if(!prevList||!_prevSel.size){showToast("食品が選択されていません");return;}
+  const toAdd=prevList.items.filter((_,i)=>_prevSel.has(i));
+  toAdd.forEach(it=>{
+    if(!items.find(x=>x.name===it.name)){
+      items.push({id:nextId++,name:it.name,cat:it.cat,checked:false});
+    }
+  });
+  save();render();
+  closePrevModal();
+  showToast(`${toAdd.length}品をリストに追加しました`);
+}
+function addItems(){
+  const raw=document.getElementById('inp').value.trim();
+  if(!raw)return;
+  const names=[...new Set(raw.split(/[\n,、，\s]+/).map(s=>s.trim()).filter(s=>s.length>0))];
+  if(!names.length)return;
+  names.forEach(name=>{items.push({id:nextId++,name,cat:classify(name),checked:false});});
+  document.getElementById('inp').value='';
+  save();render();
+  showToast(names.length+"品追加しました");
+}
+function onPfcToggle(){pfcVisible=document.getElementById('pfcToggle').checked;savePfc();render();}
 
-    // rowがDOMに追加された後にscriptを挿入
-    setTimeout(() => {
-      document.getElementById(`w${globalIdx}`).appendChild(script);
-    }, 0);
+// ─── 音声テキスト分割 ────────────────────────────────────
+// 保護ワード（分割してはいけない食品名に含まれる接続詞）
+const PROTECT_WORDS=["とうもろこし","とうふ","とうがらし","とうみょう","とんかつ","とりにく","とりむね","とりもも","とりささみ","やきとり","やきそば","やきいも","やきにく","やさい","やまいも","もやし","もち","ももにく","もずく","こんにゃく","こんぶ","そとびれ"];
+
+function splitVoiceInput(text){
+  // 保護ワードをプレースホルダーに置換
+  let s=text;
+  const ph={};
+  PROTECT_WORDS.forEach((w,i)=>{
+    const p=`\x00${i}\x00`;
+    ph[p]=w;
+    s=s.split(w).join(p);
+  });
+  // 区切りパターンで分割（スペース・接続詞・句読点）
+  s=s
+    .replace(/[,、，。\n！？]+/g,'|')
+    .replace(/それから|それと|そして|および|あとは|あと|そのほか|ほかに/g,'|')
+    .replace(/\s+/g,'|')        // ← スペース・一呼吸による空白も分割
+    .replace(/と/g,'|')
+    .replace(/や/g,'|')
+    .replace(/も/g,'|');
+  // プレースホルダーを元に戻す
+  for(const[p,w]of Object.entries(ph))s=s.split(p).join(w);
+  return s.split('|').map(v=>v.trim()).filter(v=>v.length>0);
+}
+
+// ─── 音声入力 ────────────────────────────────────────────
+let recognition=null;
+let isListening=false;
+
+function toggleMic(){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    showToast("このブラウザは音声入力に対応していません");return;
+  }
+  if(isListening){stopMic();return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang='ja-JP';
+  recognition.continuous=true;
+  recognition.interimResults=false;
+  recognition.onstart=()=>{
+    isListening=true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('micIcon').className='ti ti-microphone-off';
+    showToast("🎤 話しかけてください");
+  };
+  recognition.onresult=e=>{
+    const transcript=e.results[e.results.length-1][0].transcript.trim();
+    const parts=splitVoiceInput(transcript).filter(v=>v.length>0);
+    if(!parts.length) return;
+    // テキストエリアを経由せずそのままリストに追加
+    parts.forEach(name=>{
+      items.push({id:nextId++,name,cat:classify(name),checked:false});
+    });
+    save(); render();
+    showToast('🎤 '+parts.join(' ・ ')+' を追加');
+  };
+  recognition.onerror=e=>{
+    stopMic();
+    if(e.error==='not-allowed')showToast("マイクの許可が必要です");
+    else showToast("音声入力エラー："+e.error);
+  };
+  recognition.onend=()=>stopMic();
+  recognition.start();
+}
+function stopMic(){
+  if(recognition)recognition.stop();
+  isListening=false;
+  document.getElementById('micBtn').classList.remove('listening');
+  document.getElementById('micIcon').className='ti ti-microphone';
+  recognition=null;
+}
+
+// ─── 描画 ────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+function render(){
+  document.getElementById('pfcToggle').checked=pfcVisible;
+  const lc=document.getElementById('lc');
+  const total=items.length,done=items.filter(i=>i.checked).length;
+  document.getElementById('pt').textContent=done+' / '+total+' 完了';
+  document.getElementById('pp').textContent=total?Math.round(done/total*100)+'%':'0%';
+  document.getElementById('pb').style.width=total?Math.round(done/total*100)+'%':'0%';
+
+  // 合計PFC
+  const totalRow=document.getElementById('pfcTotalRow');
+  if(pfcVisible){
+    let tP=0,tF=0,tC=0;
+    items.forEach(it=>{const p=getPFC(it.name);if(p){tP+=p[0];tF+=p[1];tC+=p[2];}});
+    document.getElementById('tP').textContent=Math.round(tP*10)/10;
+    document.getElementById('tF').textContent=Math.round(tF*10)/10;
+    document.getElementById('tC').textContent=Math.round(tC*10)/10;
+    totalRow.classList.add('visible');
+  }else{totalRow.classList.remove('visible');}
+
+  // 前回リストボタン表示制御
+  const prevBtn=document.getElementById('prevBtn');
+  if(prevBtn) prevBtn.style.display=prevList?'':'none';
+
+  lc.innerHTML='';
+  // 前回リストバナー（リストが空のとき or 常時表示）
+  if(prevList){
+    const banner=document.createElement('div');
+    banner.className='prev-banner';
+    const preview=prevList.items.slice(0,5).map(i=>i.name).join('・')+(prevList.items.length>5?` 他${prevList.items.length-5}品`:'');
+    banner.innerHTML=
+      `<div class="prev-banner-hd" onclick="openPrevModal()">
+        <div class="prev-banner-title"><i class="ti ti-history"></i>前回の買い物リスト</div>
+        <div class="prev-banner-date">${prevList.date}</div>
+      </div>
+      <div class="prev-banner-body">
+        <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">${preview}</div>
+        <div class="prev-actions">
+          <button class="prev-add-btn" onclick="event.stopPropagation();_prevSel=new Set(prevList.items.map((_,i)=>i));restoreSelected()">✚ 全て追加</button>
+          <button class="prev-sel-btn" onclick="event.stopPropagation();openPrevModal()">選んで追加</button>
+        </div>
+      </div>`;
+    lc.appendChild(banner);
   }
 
-  columns.appendChild(col);
-});
+  if(!total){
+    if(!prevList) lc.innerHTML='<div class="empty"><i class="ti ti-basket"></i>リストが空です<br><span style="font-size:13px;display:block;margin-top:6px">下のフォームから追加してください</span></div>';
+    return;
+  }
+  CAT_ORDER.forEach(cat=>{
+    const ci=items.filter(i=>i.cat===cat);
+    if(!ci.length)return;
+    const color=CAT_COLORS[cat]||'#78909C';
+    const icon=CAT_ICONS[cat]||'ti-tag';
+    const sec=document.createElement('div');
+    sec.className='section';
+    sec.innerHTML=`<div class="sec-label" style="color:${color}"><i class="ti ${icon}" style="color:${color}"></i>${cat}</div><div class="card"></div>`;
+    const card=sec.querySelector('.card');
+    ci.forEach(it=>{
+      const pfc=getPFC(it.name);
+      const learned=!!learnedPFC[it.name];
+      let pfcHtml='';
+      if(pfcVisible){
+        if(pfc){
+          pfcHtml=`<div class="pfc-row visible">`+
+            `<span class="pfc-tag">P:<span>${pfc[0]}</span>g</span>`+
+            `<span class="pfc-tag">F:<span>${pfc[1]}</span>g</span>`+
+            `<span class="pfc-tag">C:<span>${pfc[2]}</span>g</span>`+
+            (learned?'<span style="font-size:10px;color:var(--green);margin-left:2px">✎学習済</span>':'')+
+            `</div>`;
+        }else{
+          pfcHtml=`<div class="pfc-row visible"><div class="pfc-nodata" id="nd_${it.id}">`+
+            `<button class="pfc-manual-btn2" onclick="event.stopPropagation();_asTarget={itemId:${it.id},name:'${it.name.replace(/'/g,"\\'")}'};showManualForm()"><i class="ti ti-pencil"></i> PFCを手動入力</button>`+
+            `</div></div>`;
+        }
+      }
+      const div=document.createElement('div');
+      div.className='item'+(it.checked?' checked':'');
+      const cStyle=it.checked?`background:${color};border-color:${color}`:`border-color:${color}60`;
+      div.innerHTML=
+        `<div class="color-bar" style="background:${color}"></div>`+
+        `<div class="item-inner">`+
+          `<div class="circle" style="${cStyle}"><i class="ti ti-check"></i></div>`+
+          `<div class="item-text">`+
+            `<span class="item-name">${it.name}</span>`+
+            pfcHtml+
+          `</div>`+
+          `<button class="del" aria-label="削除"><i class="ti ti-trash"></i></button>`+
+        `</div>`;
+      div.querySelector('.circle').onclick=e=>{e.stopPropagation();toggle(it.id);};
+      div.querySelector('.item-name').onclick=()=>toggle(it.id);
+      div.querySelector('.del').onclick=e=>{e.stopPropagation();del(it.id);};
+      card.appendChild(div);
+    });
+    lc.appendChild(sec);
+  });
+}
+render();
 </script>
-
 </body>
 </html>
